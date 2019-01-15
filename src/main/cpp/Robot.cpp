@@ -8,8 +8,19 @@
 #include "Robot.h"
 
 #include <iostream>
+#include <frc/WPILib.h>
 
-void Robot::RobotInit() {}
+#define CAMERA_RES_W  320
+#define CAMERA_RES_H  240
+#define CAMERA_FPS    15
+
+void Robot::RobotInit()
+{
+  // initialize camera
+  cs::UsbCamera camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+  camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
+  camera.SetFPS(CAMERA_FPS);
+}
 
 void Robot::RobotPeriodic() {}
 
@@ -24,5 +35,8 @@ void Robot::TeleopPeriodic() {}
 void Robot::TestPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main()
+{
+  return frc::StartRobot<Robot>();
+}
 #endif
