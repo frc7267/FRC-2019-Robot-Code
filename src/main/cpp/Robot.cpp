@@ -7,17 +7,10 @@
 
 #include "Robot.h"
 
-#include <iostream>
-#include <frc/WPILib.h>
-
-#define CAMERA_RES_W  320
-#define CAMERA_RES_H  240
-#define CAMERA_FPS    15
-
 void Robot::RobotInit()
 {
   // initialize camera
-  cs::UsbCamera camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+  camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
   camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
   camera.SetFPS(CAMERA_FPS);
 }
