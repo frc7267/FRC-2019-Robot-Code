@@ -13,7 +13,6 @@
 class Robot : public frc::TimedRobot
 {
   public:
-
     void RobotInit() override;
     void RobotPeriodic() override;
     void AutonomousInit() override;
@@ -23,11 +22,9 @@ class Robot : public frc::TimedRobot
     void TestPeriodic() override;
 
   private:
-
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
 
     cs::UsbCamera camera;
-
 };

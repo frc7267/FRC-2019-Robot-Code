@@ -9,10 +9,10 @@
 
 void Robot::RobotInit()
 {
-  // initialize camera
-  camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
-  camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
-  camera.SetFPS(CAMERA_FPS);
+    // initialize camera
+    camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+    camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
+    camera.SetFPS(CAMERA_FPS);
 }
 
 void Robot::RobotPeriodic() {}
@@ -30,6 +30,6 @@ void Robot::TestPeriodic() {}
 #ifndef RUNNING_FRC_TESTS
 int main()
 {
-  return frc::StartRobot<Robot>();
+    return frc::StartRobot<Robot>();
 }
 #endif
