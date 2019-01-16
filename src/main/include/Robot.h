@@ -7,8 +7,12 @@
 
 #pragma once
 
-#include <frc/TimedRobot.h>
 #include <frc/WPILib.h>
+#include <frc/TimedRobot.h>
+#include <frc/Joystick.h>
+#include <frc/PWMVictorSPX.h>
+#include <frc/spark.h>
+#include <frc/drive/DifferentialDrive.h>
 
 class Robot : public frc::TimedRobot
 {
@@ -22,9 +26,33 @@ class Robot : public frc::TimedRobot
     void TestPeriodic() override;
 
   private:
+    // pin constants
+    const int LEFT_MOTOR_PIN = 0;
+    const int RIGHT_MOTOR_PIN = 1;
+    const int INTAKE_MOTOR_PIN = 2;
+
+    // camera constants
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
 
+    // buttons constants
+    const int INTAKE_SUCC_BUTTON = 7;
+    const int INTAKE_PUKE_BUTTON = 8;
+
+    // speed constants
+    const float INTAKE_SPEED = 1.0;
+
     cs::UsbCamera camera;
+
+    frc::PWMVictorSPX m_leftMotor{LEFT_MOTOR_PIN};
+    frc::PWMVictorSPX m_rightMotor{RIGHT_MOTOR_PIN};
+    frc::DifferentialDrive m_robotDrive{m_leftMotor, m_rightMotor};
+
+    frc::Joystick m_stick{0};
+
+    frc::Spark m_intakeMotor{INTAKE_MOTOR_PIN};
+
+    void ArcadeDrive();
+    void IntakeSuccAndPuke();
 };
