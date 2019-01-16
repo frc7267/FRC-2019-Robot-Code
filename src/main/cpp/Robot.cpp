@@ -7,9 +7,13 @@
 
 #include "Robot.h"
 
-#include <iostream>
-
-void Robot::RobotInit() {}
+void Robot::RobotInit()
+{
+    // initialize camera
+    camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+    camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
+    camera.SetFPS(CAMERA_FPS);
+}
 
 void Robot::RobotPeriodic() {}
 
@@ -24,5 +28,8 @@ void Robot::TeleopPeriodic() {}
 void Robot::TestPeriodic() {}
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main()
+{
+    return frc::StartRobot<Robot>();
+}
 #endif
