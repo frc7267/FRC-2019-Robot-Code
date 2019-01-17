@@ -38,8 +38,7 @@ void Robot::TestPeriodic() {}
 void Robot::ArcadeDrive()
 {
     // acrade drive
-    m_robotDrive.ArcadeDrive(-m_stick.GetY() * DRIVE_Y_SPEED,
-        m_stick.GetX() * DRIVE_X_SPEED);
+    m_robotDrive.ArcadeDrive(-m_stick.GetY() * DRIVE_Y_SPEED, m_stick.GetX() * DRIVE_X_SPEED);
 }
 
 void Robot::ControlIntake()
