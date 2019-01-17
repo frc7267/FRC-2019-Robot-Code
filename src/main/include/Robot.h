@@ -7,16 +7,17 @@
 
 #pragma once
 
-#include <frc/WPILib.h>
-#include <frc/TimedRobot.h>
 #include <frc/Joystick.h>
 #include <frc/PWMVictorSPX.h>
-#include <frc/spark.h>
+#include <frc/Spark.h>
+#include <frc/TimedRobot.h>
+#include <frc/WPILib.h>
 #include <frc/drive/DifferentialDrive.h>
 
-class Robot : public frc::TimedRobot
-{
-  public:
+class Robot : public frc::TimedRobot {
+
+public:
+    // default functions
     void RobotInit() override;
     void RobotPeriodic() override;
     void AutonomousInit() override;
@@ -25,34 +26,35 @@ class Robot : public frc::TimedRobot
     void TeleopPeriodic() override;
     void TestPeriodic() override;
 
-  private:
+private:
     // pin constants
     const int LEFT_MOTOR_PIN = 0;
     const int RIGHT_MOTOR_PIN = 1;
     const int INTAKE_MOTOR_PIN = 2;
-
     // camera constants
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
-
     // buttons constants
     const int INTAKE_SUCC_BUTTON = 7;
     const int INTAKE_PUKE_BUTTON = 8;
-
     // speed constants
-    const float INTAKE_SPEED = 1.0;
+    const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
+    const float DRIVE_X_SPEED = 1.0;
+    const float DRIVE_Y_SPEED = -1.0; // y axis is inverted
 
+    // joystick
+    frc::Joystick m_stick{ 0 };
+    // camera
     cs::UsbCamera camera;
+    // drive motors
+    frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
+    frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
+    frc::DifferentialDrive m_robotDrive{ m_leftMotor, m_rightMotor };
+    // intake motors
+    frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
 
-    frc::PWMVictorSPX m_leftMotor{LEFT_MOTOR_PIN};
-    frc::PWMVictorSPX m_rightMotor{RIGHT_MOTOR_PIN};
-    frc::DifferentialDrive m_robotDrive{m_leftMotor, m_rightMotor};
-
-    frc::Joystick m_stick{0};
-
-    frc::Spark m_intakeMotor{INTAKE_MOTOR_PIN};
-
+    // periodic functions
     void ArcadeDrive();
-    void IntakeSuccAndPuke();
+    void ControlIntake();
 };

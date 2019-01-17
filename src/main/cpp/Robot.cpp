@@ -9,18 +9,20 @@
 
 void Robot::RobotInit()
 {
-    // initialize camera
+    // camera settings
     camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
     camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
     camera.SetFPS(CAMERA_FPS);
-    // inititalize intake motor
+    // intake motor settings
     m_intakeMotor.EnableDeadbandElimination(true);
 }
 
 void Robot::RobotPeriodic()
 {
+    // drive with joystick
     ArcadeDrive();
-    IntakeSuccAndPuke();
+    // control intake
+    ControlIntake();
 }
 
 void Robot::AutonomousInit() {}
@@ -35,21 +37,23 @@ void Robot::TestPeriodic() {}
 
 void Robot::ArcadeDrive()
 {
-    m_robotDrive.ArcadeDrive(-m_stick.GetY(), m_stick.GetX());
+    // acrade drive
+    m_robotDrive.ArcadeDrive(-m_stick.GetY() * DRIVE_Y_SPEED,
+        m_stick.GetX() * DRIVE_X_SPEED);
 }
 
-void Robot::IntakeSuccAndPuke()
+void Robot::ControlIntake()
 {
-    if (m_stick.GetRawButton(INTAKE_SUCC_BUTTON))
-    {
+    // succ
+    if (m_stick.GetRawButton(INTAKE_SUCC_BUTTON)) {
         m_intakeMotor.SetSpeed(-INTAKE_SPEED);
     }
-    else if (m_stick.GetRawButton(INTAKE_PUKE_BUTTON))
-    {
+    // puke
+    else if (m_stick.GetRawButton(INTAKE_PUKE_BUTTON)) {
         m_intakeMotor.SetSpeed(INTAKE_SPEED);
     }
-    else
-    {
+    // stop (intake motor)
+    else {
         m_intakeMotor.SetSpeed(0.0);
     }
 }
