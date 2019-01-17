@@ -10,9 +10,9 @@
 void Robot::RobotInit()
 {
     // camera settings
-    camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
-    camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
-    camera.SetFPS(CAMERA_FPS);
+    m_camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+    m_camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
+    m_camera.SetFPS(CAMERA_FPS);
     // intake motor settings
     m_intakeMotor.EnableDeadbandElimination(true);
 }

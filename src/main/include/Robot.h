@@ -46,7 +46,7 @@ private:
     // joystick
     frc::Joystick m_stick{ 0 };
     // camera
-    cs::UsbCamera camera;
+    cs::UsbCamera m_camera;
     // drive motors
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
