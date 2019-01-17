@@ -55,6 +55,6 @@ private:
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
 
     // periodic functions
-    void ArcadeDrive();
+    void DriveWithJoystick();
     void ControlIntake();
 };

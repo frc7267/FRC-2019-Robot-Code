@@ -19,9 +19,7 @@ void Robot::RobotInit()
 
 void Robot::RobotPeriodic()
 {
-    // drive with joystick
-    ArcadeDrive();
-    // control intake
+    DriveWithJoystick();
     ControlIntake();
 }
 
@@ -35,10 +33,12 @@ void Robot::TeleopPeriodic() {}
 
 void Robot::TestPeriodic() {}
 
-void Robot::ArcadeDrive()
+void Robot::DriveWithJoystick()
 {
     // acrade drive
-    m_robotDrive.ArcadeDrive(-m_stick.GetY() * DRIVE_Y_SPEED, m_stick.GetX() * DRIVE_X_SPEED);
+    float xDrive = m_stick.GetX() * DRIVE_X_SPEED;
+    float yDrive = m_stick.GetY() * DRIVE_Y_SPEED;
+    m_robotDrive.ArcadeDrive(yDrive, xDrive);
 }
 
 void Robot::ControlIntake()
