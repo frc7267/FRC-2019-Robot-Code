@@ -15,12 +15,16 @@ void Robot::RobotInit()
     m_camera.SetFPS(CAMERA_FPS);
     // intake motor settings
     m_intakeMotor.EnableDeadbandElimination(true);
+    // compressor settings
+    m_compressor->SetClosedLoopControl(false);
 }
 
 void Robot::RobotPeriodic()
 {
     DriveWithJoystick();
     ControlIntake();
+    ControlCompressorEnabledState();
+    DisplayShuffleBoardInformation();
 }
 
 void Robot::AutonomousInit() {}
@@ -55,6 +59,22 @@ void Robot::ControlIntake()
     else {
         m_intakeMotor.SetSpeed(0.0);
     }
+}
+
+void Robot::ControlCompressorEnabledState()
+{
+    // turn on compressor
+    if (m_stick.GetRawButton(COMPRESSOR_ON_BUTTON)) {
+        m_compressor->SetClosedLoopControl(true);
+    // turn off compressor
+    } else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
+        m_compressor->SetClosedLoopControl(false);
+    }
+}
+
+void Robot::DisplayShuffleBoardInformation()
+{
+    frc::SmartDashboard::PutBoolean("Compressor Enabled?", m_compressor->Enabled());
 }
 
 #ifndef RUNNING_FRC_TESTS

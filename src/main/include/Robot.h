@@ -7,12 +7,8 @@
 
 #pragma once
 
-#include <frc/Joystick.h>
-#include <frc/PWMVictorSPX.h>
-#include <frc/Spark.h>
-#include <frc/TimedRobot.h>
+#include <iostream>
 #include <frc/WPILib.h>
-#include <frc/drive/DifferentialDrive.h>
 
 class Robot : public frc::TimedRobot {
 
@@ -38,6 +34,8 @@ private:
     // buttons constants
     const int INTAKE_SUCC_BUTTON = 7;
     const int INTAKE_PUKE_BUTTON = 8;
+    const int COMPRESSOR_ON_BUTTON = 11;
+    const int COMPRESSOR_OFF_BUTTON = 12;
     // speed constants
     const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
     const float DRIVE_X_SPEED = 1.0;
@@ -53,8 +51,12 @@ private:
     frc::DifferentialDrive m_robotDrive{ m_leftMotor, m_rightMotor };
     // intake motors
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
+    // compressor
+    frc::Compressor *m_compressor = new frc::Compressor(0);
 
     // periodic functions
     void DriveWithJoystick();
     void ControlIntake();
+    void ControlCompressorEnabledState();
+    void DisplayShuffleBoardInformation();
 };
