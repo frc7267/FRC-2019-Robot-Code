@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <iostream>
 #include <frc/WPILib.h>
+#include <iostream>
+#include <string>
 
 class Robot : public frc::TimedRobot {
 
@@ -27,6 +28,7 @@ private:
     const int LEFT_MOTOR_PIN = 0;
     const int RIGHT_MOTOR_PIN = 1;
     const int INTAKE_MOTOR_PIN = 2;
+    const int CAMERA_SERVO_PIN = 6;
     // camera constants
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
@@ -45,6 +47,7 @@ private:
     frc::Joystick m_stick{ 0 };
     // camera
     cs::UsbCamera m_camera;
+    frc::Servo *m_cameraServo = new frc::Servo(CAMERA_SERVO_PIN);
     // drive motors
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
@@ -52,10 +55,11 @@ private:
     // intake motors
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
     // compressor
-    frc::Compressor *m_compressor = new frc::Compressor(0);
+    frc::Compressor* m_compressor = new frc::Compressor(0);
 
     // periodic functions
     void DriveWithJoystick();
+    void ControlCameraServo();
     void ControlIntake();
     void ControlCompressorEnabledState();
     void DisplayShuffleBoardInformation();

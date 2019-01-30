@@ -10,7 +10,7 @@
 void Robot::RobotInit()
 {
     // camera settings
-    m_camera = frc::CameraServer::GetInstance()->StartAutomaticCapture();
+    m_camera = frc::CameraServer::GetInstance()->StartAutomaticCapture(0);
     m_camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
     m_camera.SetFPS(CAMERA_FPS);
     // intake motor settings
@@ -22,6 +22,7 @@ void Robot::RobotInit()
 void Robot::RobotPeriodic()
 {
     DriveWithJoystick();
+    ControlCameraServo();
     ControlIntake();
     ControlCompressorEnabledState();
     DisplayShuffleBoardInformation();
@@ -45,6 +46,13 @@ void Robot::DriveWithJoystick()
     m_robotDrive.ArcadeDrive(yDrive, xDrive);
 }
 
+void Robot::ControlCameraServo()
+{
+    // control camera servo with throttle
+    double servoVal = 0.5 * (m_stick.GetThrottle() + 1); // convert from -1 to 1 to 0 to 1
+    m_cameraServo->Set(servoVal);
+}
+
 void Robot::ControlIntake()
 {
     // succ
@@ -66,7 +74,7 @@ void Robot::ControlCompressorEnabledState()
     // turn on compressor
     if (m_stick.GetRawButton(COMPRESSOR_ON_BUTTON)) {
         m_compressor->SetClosedLoopControl(true);
-    // turn off compressor
+        // turn off compressor
     } else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
         m_compressor->SetClosedLoopControl(false);
     }
@@ -75,6 +83,7 @@ void Robot::ControlCompressorEnabledState()
 void Robot::DisplayShuffleBoardInformation()
 {
     frc::SmartDashboard::PutBoolean("Compressor Enabled?", m_compressor->Enabled());
+    frc::SmartDashboard::PutNumber("Camera Angle", m_cameraServo->GetAngle());
 }
 
 #ifndef RUNNING_FRC_TESTS
