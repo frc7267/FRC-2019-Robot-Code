@@ -25,6 +25,7 @@ void Robot::RobotPeriodic()
     ControlCameraServo();
     ControlIntake();
     ControlCompressorEnabledState();
+    ControlSwingyLiftPiston();
     DisplayShuffleBoardInformation();
 }
 
@@ -77,6 +78,22 @@ void Robot::ControlCompressorEnabledState()
         // turn off compressor
     } else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
         m_compressor->SetClosedLoopControl(false);
+    }
+}
+
+void Robot::ControlSwingyLiftPiston()
+{
+    // extend piston
+    if (m_stick.GetRawButton(SWINGY_LIFT_OUT_BUTTON)) {
+        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
+    }
+    // retract piston
+    else if (m_stick.GetRawButton(SWINGY_LIFT_IN_BUTTON)) {
+        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
+    }
+    // do nothing with piston
+    else {
+        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
     }
 }
 
