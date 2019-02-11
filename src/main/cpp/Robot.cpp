@@ -26,6 +26,7 @@ void Robot::RobotPeriodic()
     ControlIntake();
     ControlCompressorEnabledState();
     ControlSwingyLiftPiston();
+    ControlHatchPiston();
     DisplayShuffleBoardInformation();
 }
 
@@ -76,7 +77,7 @@ void Robot::ControlCompressorEnabledState()
     if (m_stick.GetRawButton(COMPRESSOR_ON_BUTTON)) {
         m_compressor->SetClosedLoopControl(true);
     }
-    // turn off compressor 
+    // turn off compressor
     else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
         m_compressor->SetClosedLoopControl(false);
     }
@@ -95,6 +96,22 @@ void Robot::ControlSwingyLiftPiston()
     // do nothing with piston
     else {
         m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+    }
+}
+
+void Robot::ControlHatchPiston()
+{
+    // extend piston
+    if (m_stick.GetRawButton(HATCH_IN_BUTTON)) {
+        m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
+    }
+    // retract piston
+    else if (m_stick.GetRawButton(HATCH_OUT_BUTTON)) {
+        m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
+    }
+    // do nothing with piston
+    else {
+        m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
     }
 }
 
