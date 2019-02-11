@@ -32,6 +32,8 @@ private:
     // PCM pin constants
     const int SWINGY_LIFT_SOLONOID_PIN_1 = 0;
     const int SWINGY_LIFT_SOLONOID_PIN_2 = 1;
+    const int HATCH_SOLONOID_PIN_1 = 2;
+    const int HATCH_SOLONOID_PIN_2 = 3;
     // camera constants
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
@@ -43,6 +45,8 @@ private:
     const int COMPRESSOR_OFF_BUTTON = 12;
     const int SWINGY_LIFT_OUT_BUTTON = 3;
     const int SWINGY_LIFT_IN_BUTTON = 4;
+    const int HATCH_IN_BUTTON = 9;
+    const int HATCH_OUT_BUTTON = 10;
     // speed constants
     const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
     const float DRIVE_X_SPEED = 1.0;
@@ -62,6 +66,7 @@ private:
     // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
     frc::DoubleSolenoid m_swingyLiftSolenoid{ SWINGY_LIFT_SOLONOID_PIN_1, SWINGY_LIFT_SOLONOID_PIN_2 };
+    frc::DoubleSolenoid m_hatchSolenoid{ HATCH_SOLONOID_PIN_1, HATCH_SOLONOID_PIN_2 };
 
     // periodic functions
     void DriveWithJoystick();
@@ -69,5 +74,6 @@ private:
     void ControlIntake();
     void ControlCompressorEnabledState();
     void ControlSwingyLiftPiston();
+    void ControlHatchPiston();
     void DisplayShuffleBoardInformation();
 };
