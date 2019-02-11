@@ -24,11 +24,14 @@ public:
     void TestPeriodic() override;
 
 private:
-    // pin constants
+    // RIO pin constants
     const int LEFT_MOTOR_PIN = 0;
     const int RIGHT_MOTOR_PIN = 1;
     const int INTAKE_MOTOR_PIN = 2;
     const int CAMERA_SERVO_PIN = 6;
+    // PCM pin constants
+    const int SWINGY_LIFT_SOLONOID_PIN_1 = 0;
+    const int SWINGY_LIFT_SOLONOID_PIN_2 = 1;
     // camera constants
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
@@ -38,6 +41,8 @@ private:
     const int INTAKE_PUKE_BUTTON = 8;
     const int COMPRESSOR_ON_BUTTON = 11;
     const int COMPRESSOR_OFF_BUTTON = 12;
+    const int SWINGY_LIFT_OUT_BUTTON = 3;
+    const int SWINGY_LIFT_IN_BUTTON = 4;
     // speed constants
     const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
     const float DRIVE_X_SPEED = 1.0;
@@ -47,20 +52,22 @@ private:
     frc::Joystick m_stick{ 0 };
     // camera
     cs::UsbCamera m_camera;
-    frc::Servo *m_cameraServo = new frc::Servo(CAMERA_SERVO_PIN);
-    // drive motors
+    frc::Servo* m_cameraServo = new frc::Servo(CAMERA_SERVO_PIN);
+    // drive
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
     frc::DifferentialDrive m_robotDrive{ m_leftMotor, m_rightMotor };
-    // intake motors
+    // intake
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
-    // compressor
+    // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
+    frc::DoubleSolenoid m_swingyLiftSolenoid{ SWINGY_LIFT_SOLONOID_PIN_1, SWINGY_LIFT_SOLONOID_PIN_2 };
 
     // periodic functions
     void DriveWithJoystick();
     void ControlCameraServo();
     void ControlIntake();
     void ControlCompressorEnabledState();
+    void ControlSwingyLiftPiston();
     void DisplayShuffleBoardInformation();
 };
