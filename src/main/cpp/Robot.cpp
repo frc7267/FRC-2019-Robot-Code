@@ -75,8 +75,9 @@ void Robot::ControlCompressorEnabledState()
     // turn on compressor
     if (m_stick.GetRawButton(COMPRESSOR_ON_BUTTON)) {
         m_compressor->SetClosedLoopControl(true);
-        // turn off compressor
-    } else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
+    }
+    // turn off compressor 
+    else if (m_stick.GetRawButton(COMPRESSOR_OFF_BUTTON)) {
         m_compressor->SetClosedLoopControl(false);
     }
 }
