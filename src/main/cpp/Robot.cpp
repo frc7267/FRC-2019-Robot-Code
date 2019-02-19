@@ -32,6 +32,7 @@ void Robot::RobotPeriodic()
     ControlCompressorEnabledState();
     ControlIntakePiston();
     ControlHatchPiston();
+    ControlArmMotor();
 
     DisplayShuffleBoardInformation();
 }
@@ -40,9 +41,7 @@ void Robot::AutonomousInit() {}
 
 void Robot::AutonomousPeriodic() {}
 
-void Robot::TeleopInit() {
-    //testMotor.Set(ControlMode::Velocity, 1);
-}
+void Robot::TeleopInit() {}
 
 void Robot::TeleopPeriodic() {}
 
@@ -66,9 +65,25 @@ void Robot::ControlIntakeMotor()
     else if (m_stick.GetRawButton(INTAKE_PUKE_BUTTON)) {
         m_intakeMotor.SetSpeed(INTAKE_SPEED);
     }
-    // stop (intake motor)
+    // stop
     else {
         m_intakeMotor.SetSpeed(0.0);
+    }
+}
+
+void Robot::ControlArmMotor()
+{
+    // up
+    if (m_stick.GetRawButton(ARM_UP_BUTTON)) {
+        m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED);
+    }
+    // down
+    else if (m_stick.GetRawButton(ARM_DOWN_BUTTON)) {
+        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED);
+    }
+    // stop
+    else {
+        m_armMotor.Set(ControlMode::PercentOutput, 0);
     }
 }
 
