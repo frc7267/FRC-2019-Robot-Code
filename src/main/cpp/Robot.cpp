@@ -17,16 +17,22 @@ void Robot::RobotInit()
     m_intakeMotor.EnableDeadbandElimination(true);
     // compressor settings
     m_compressor->SetClosedLoopControl(false);
+
+    //testMotor.ConfigPeakCurrentLimit(35, 10); /* 35 A */
+    //testMotor.ConfigPeakCurrentDuration(200, 10); /* 200ms */
+    //testMotor.ConfigContinuousCurrentLimit(30, 10);   /* 30A */
+    //testMotor.EnableCurrentLimit(true);
 }
 
 void Robot::RobotPeriodic()
 {
     DriveWithJoystick();
-    ControlCameraServo();
-    ControlIntake();
+    ControlIntakeMotor();
+
     ControlCompressorEnabledState();
-    ControlSwingyLiftPiston();
+    ControlIntakePiston();
     ControlHatchPiston();
+
     DisplayShuffleBoardInformation();
 }
 
@@ -34,7 +40,9 @@ void Robot::AutonomousInit() {}
 
 void Robot::AutonomousPeriodic() {}
 
-void Robot::TeleopInit() {}
+void Robot::TeleopInit() {
+    //testMotor.Set(ControlMode::Velocity, 1);
+}
 
 void Robot::TeleopPeriodic() {}
 
@@ -48,14 +56,7 @@ void Robot::DriveWithJoystick()
     m_robotDrive.ArcadeDrive(yDrive, xDrive);
 }
 
-void Robot::ControlCameraServo()
-{
-    // control camera servo with throttle
-    double servoVal = 0.5 * (m_stick.GetThrottle() + 1); // convert from -1 to 1 to 0 to 1
-    m_cameraServo->Set(servoVal);
-}
-
-void Robot::ControlIntake()
+void Robot::ControlIntakeMotor()
 {
     // succ
     if (m_stick.GetRawButton(INTAKE_SUCC_BUTTON)) {
@@ -83,19 +84,19 @@ void Robot::ControlCompressorEnabledState()
     }
 }
 
-void Robot::ControlSwingyLiftPiston()
+void Robot::ControlIntakePiston()
 {
     // extend piston
-    if (m_stick.GetRawButton(SWINGY_LIFT_OUT_BUTTON)) {
-        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
+    if (m_stick.GetRawButton(INTAKE_OUT_BUTTON)) {
+        m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
     }
     // retract piston
-    else if (m_stick.GetRawButton(SWINGY_LIFT_IN_BUTTON)) {
-        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
+    else if (m_stick.GetRawButton(INTAKE_IN_BUTTON)) {
+        m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
     }
     // do nothing with piston
     else {
-        m_swingyLiftSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
+        m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kOff);
     }
 }
 
@@ -118,7 +119,6 @@ void Robot::ControlHatchPiston()
 void Robot::DisplayShuffleBoardInformation()
 {
     frc::SmartDashboard::PutBoolean("Compressor Enabled?", m_compressor->Enabled());
-    frc::SmartDashboard::PutNumber("Camera Angle", m_cameraServo->GetAngle());
 }
 
 #ifndef RUNNING_FRC_TESTS
