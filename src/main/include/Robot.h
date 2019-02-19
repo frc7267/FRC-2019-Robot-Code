@@ -10,6 +10,7 @@
 #include <frc/WPILib.h>
 #include <iostream>
 #include <string>
+//#include <ctre/Phoenix.h>
 
 class Robot : public frc::TimedRobot {
 
@@ -25,13 +26,13 @@ public:
 
 private:
     // RIO pin constants
-    const int LEFT_MOTOR_PIN = 0;
+    const int LEFT_MOTOR_PIN = 2;
     const int RIGHT_MOTOR_PIN = 1;
-    const int INTAKE_MOTOR_PIN = 2;
-    const int CAMERA_SERVO_PIN = 6;
+    const int INTAKE_MOTOR_PIN = 0;
+    const int BALL_DETECT_SENSOR_PIN = 7;
     // PCM pin constants
-    const int SWINGY_LIFT_SOLONOID_PIN_1 = 0;
-    const int SWINGY_LIFT_SOLONOID_PIN_2 = 1;
+    const int INTAKE_SOLONOID_PIN_1 = 0;
+    const int INTAKE_SOLONOID_PIN_2 = 1;
     const int HATCH_SOLONOID_PIN_1 = 2;
     const int HATCH_SOLONOID_PIN_2 = 3;
     // camera constants
@@ -43,8 +44,8 @@ private:
     const int INTAKE_PUKE_BUTTON = 8;
     const int COMPRESSOR_ON_BUTTON = 11;
     const int COMPRESSOR_OFF_BUTTON = 12;
-    const int SWINGY_LIFT_OUT_BUTTON = 3;
-    const int SWINGY_LIFT_IN_BUTTON = 4;
+    const int INTAKE_OUT_BUTTON = 3;
+    const int INTAKE_IN_BUTTON = 4;
     const int HATCH_IN_BUTTON = 9;
     const int HATCH_OUT_BUTTON = 10;
     // speed constants
@@ -56,7 +57,6 @@ private:
     frc::Joystick m_stick{ 0 };
     // camera
     cs::UsbCamera m_camera;
-    frc::Servo* m_cameraServo = new frc::Servo(CAMERA_SERVO_PIN);
     // drive
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
@@ -65,15 +65,18 @@ private:
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
     // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
-    frc::DoubleSolenoid m_swingyLiftSolenoid{ SWINGY_LIFT_SOLONOID_PIN_1, SWINGY_LIFT_SOLONOID_PIN_2 };
+    frc::DoubleSolenoid m_intakeSolenoid{ INTAKE_SOLONOID_PIN_1, INTAKE_SOLONOID_PIN_2 };
     frc::DoubleSolenoid m_hatchSolenoid{ HATCH_SOLONOID_PIN_1, HATCH_SOLONOID_PIN_2 };
+
+    //WPI_VictorSPX testMotor{0};
 
     // periodic functions
     void DriveWithJoystick();
-    void ControlCameraServo();
-    void ControlIntake();
+    void ControlIntakeMotor();
+
     void ControlCompressorEnabledState();
-    void ControlSwingyLiftPiston();
+    void ControlIntakePiston();
     void ControlHatchPiston();
+
     void DisplayShuffleBoardInformation();
 };
