@@ -14,14 +14,23 @@ void Robot::RobotInit()
     m_camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
     m_camera.SetFPS(CAMERA_FPS);
     // intake motor settings
-    m_intakeMotor.EnableDeadbandElimination(true);
+    m_intakeMotor.EnableDeadbandElimination(false);
     // compressor settings
     m_compressor->SetClosedLoopControl(false);
 
+
+    //lift encoder settings
+    m_liftEncoder.Reset();
+    m_liftEncoder.SetMaxPeriod(0.1);
+    m_liftEncoder.SetMinRate(10);
+    m_liftEncoder.SetDistancePerPulse(5);
+    m_liftEncoder.SetReverseDirection(false);
+    m_liftEncoder.SetSamplesToAverage(10);
     //testMotor.ConfigPeakCurrentLimit(35, 10); /* 35 A */
     //testMotor.ConfigPeakCurrentDuration(200, 10); /* 200ms */
     //testMotor.ConfigContinuousCurrentLimit(30, 10);   /* 30A */
     //testMotor.EnableCurrentLimit(true);
+
 }
 
 void Robot::RobotPeriodic()
@@ -57,24 +66,13 @@ void Robot::DriveWithJoystick()
 
 void Robot::ControlIntakeMotor()
 {
-    // succ
-    if (m_stick.GetRawButton(INTAKE_SUCC_BUTTON)) {
-        m_intakeMotor.SetSpeed(-INTAKE_SPEED);
-    }
-    // puke
-    else if (m_stick.GetRawButton(INTAKE_PUKE_BUTTON)) {
-        m_intakeMotor.SetSpeed(INTAKE_SPEED);
-    }
-    // stop
-    else {
-        m_intakeMotor.SetSpeed(0.0);
-    }
+    m_intakeMotor.SetSpeed(m_secondarystick.GetRawAxis(5));
 }
 
 void Robot::ControlArmMotor()
 {
     // up
-    if (m_stick.GetRawButton(ARM_UP_BUTTON)) {
+    /*if (m_stick.GetRawButton(ARM_UP_BUTTON)) {
         m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED);
     }
     // down
@@ -84,8 +82,34 @@ void Robot::ControlArmMotor()
     // stop
     else {
         m_armMotor.Set(ControlMode::PercentOutput, 0);
+    }*/
+    if (m_secondarystick.GetRawButton(ARM_UP_BUTTON)) {
+        ARM_TARGET_ANGLE = 100;
     }
+    // down
+    else if (m_secondarystick.GetRawButton(ARM_DOWN_BUTTON)) {
+        ARM_TARGET_ANGLE = 0;
+    }
+    float error = m_liftEncoder.Get() / ARM_COUNTS_PER_DEGREE - ARM_TARGET_ANGLE;
+    if(error < 0)
+    {
+        m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * (std::max(abs(error / 10), 1));
+        m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * (std::max(abs(error / 10), 1));
+    }
+    else if(error > 0)
+    {
+        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED * (std::max(abs(error / 10), 1));
+        m_armMotor2.Set(ControlMode::PercentOutput, ARM_SPEED * (std::max(abs(error / 10), 1));
+    }
+    else
+    {
+        m_armMotor.Set(ControlMode::PercentOutput, 0);
+        m_armMotor2.Set(ControlMode::PercentOutput, 0);
+    }
+    
 }
+
+
 
 void Robot::ControlCompressorEnabledState()
 {
@@ -102,11 +126,11 @@ void Robot::ControlCompressorEnabledState()
 void Robot::ControlIntakePiston()
 {
     // extend piston
-    if (m_stick.GetRawButton(INTAKE_OUT_BUTTON)) {
+    if (m_secondarystick.GetPOV(0) == 315 || m_secondarystick.GetPOV(0) == 45 || m_secondarystick.GetPOV(0) == 0) {
         m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
     }
     // retract piston
-    else if (m_stick.GetRawButton(INTAKE_IN_BUTTON)) {
+    else if (m_secondarystick.GetPOV(0) >= 135 && m_secondarystick.GetPOV(0) <= 225) {
         m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
     }
     // do nothing with piston
@@ -117,12 +141,11 @@ void Robot::ControlIntakePiston()
 
 void Robot::ControlHatchPiston()
 {
-    // extend piston
-    if (m_stick.GetRawButton(HATCH_IN_BUTTON)) {
+    if (m_secondarystick.GetPOV(0) >= 15 && m_secondarystick.GetPOV(0) <= 135) {
         m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
     }
     // retract piston
-    else if (m_stick.GetRawButton(HATCH_OUT_BUTTON)) {
+    else if (m_secondarystick.GetPOV(0) >= 225 && m_secondarystick.GetPOV(0) <= 315) {
         m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
     }
     // do nothing with piston
@@ -133,7 +156,12 @@ void Robot::ControlHatchPiston()
 
 void Robot::DisplayShuffleBoardInformation()
 {
+    //frc::ShuffleboardTab tab = 
+    //frc::Shuffleboard::GetTab("SmartDashboard");
+    //double p = frc::Shuffleboard::GetTab("SmartDashboard").add("P value", 1).getEntry();
     frc::SmartDashboard::PutBoolean("Compressor Enabled?", m_compressor->Enabled());
+    //std::cout << p << std::endl;
+    //std::cout << frc::SmartDashboard::GetNumber("Porportional Coefficient", -1) << std::endl;
 }
 
 #ifndef RUNNING_FRC_TESTS

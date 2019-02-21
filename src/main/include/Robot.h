@@ -39,26 +39,29 @@ private:
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
     // buttons constants
-    const int INTAKE_SUCC_BUTTON = 7;
-    const int INTAKE_PUKE_BUTTON = 8;
     const int COMPRESSOR_ON_BUTTON = 11;
     const int COMPRESSOR_OFF_BUTTON = 12;
-    const int INTAKE_OUT_BUTTON = 3;
-    const int INTAKE_IN_BUTTON = 4;
-    const int HATCH_IN_BUTTON = 9;
-    const int HATCH_OUT_BUTTON = 10;
-    const int ARM_UP_BUTTON = 1;
-    const int ARM_DOWN_BUTTON = 2;
+    const int ARM_UP_BUTTON = 4;
+    const int ARM_DOWN_BUTTON = 1;
     // speed constants
     const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
     const float ARM_SPEED = 1.0;
     const float DRIVE_X_SPEED = 1.0;
     const float DRIVE_Y_SPEED = -1.0; // y axis is inverted
 
+    //encoder angle constants
+    const int ARM_COUNTS_PER_DEGREE = 71 * 7 / 360;
+    const int ARM_MAX_ANGLE = 400;
+    int ARM_TARGET_ANGLE = 0;
+
     // joystick
     frc::Joystick m_stick{ 0 };
+    frc::Joystick m_secondarystick{ 1 };
     // camera
     cs::UsbCamera m_camera;
+
+    //frc::PIDController pid(0, 0, 0, frc::PIDSource::GetPIDSourceType(m_liftEncoder.Get()), );
+
     // drive
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
@@ -66,6 +69,8 @@ private:
     // intake
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
     WPI_VictorSPX m_armMotor{ 0 };
+    WPI_VictorSPX m_armMotor2{ 1 };
+    frc::Encoder m_liftEncoder{ 0, 1, false, frc::Encoder::EncodingType::k2X };
     // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
     frc::DoubleSolenoid m_intakeSolenoid{ INTAKE_SOLONOID_PIN_1, INTAKE_SOLONOID_PIN_2 };
