@@ -31,10 +31,13 @@ void Robot::RobotInit()
     //testMotor.ConfigContinuousCurrentLimit(30, 10);   /* 30A */
     //testMotor.EnableCurrentLimit(true);
 
+    
+
 }
 
 void Robot::RobotPeriodic()
 {
+    
     DriveWithJoystick();
     ControlIntakeMotor();
 
@@ -44,6 +47,21 @@ void Robot::RobotPeriodic()
     ControlArmMotor();
 
     DisplayShuffleBoardInformation();
+    //manual override
+    if (m_secondarystick.GetRawAxis(MANUAL_OVERRIDE_BUTTON) > 0.7) {
+        manual = true;
+    }
+    else if (manual)
+    {
+        //reset encoder the first loop after manual override is released;
+        m_liftEncoder.Reset();
+        ARM_TARGET_ANGLE = 0;
+        manual = false;
+    }
+    else
+    {
+        manual = false;
+    }
 }
 
 void Robot::AutonomousInit() {}
@@ -66,7 +84,20 @@ void Robot::DriveWithJoystick()
 
 void Robot::ControlIntakeMotor()
 {
-    m_intakeMotor.SetSpeed(m_secondarystick.GetRawAxis(5));
+    if(!m_cargoSwitch.Get() && !manual)
+    {
+        m_intakeMotor.SetSpeed(std::fmax(-m_secondarystick.GetRawAxis(INTAKE_AXIS), 0));
+        if(m_secondarystick.GetRawAxis(INTAKE_AXIS) > 0.4)
+        {
+            std::cout << "rumble" << std::endl;
+            m_secondarystick.SetRumble(frc::GenericHID::RumbleType::kLeftRumble, 1.0);
+            m_secondarystick.SetRumble(frc::GenericHID::RumbleType::kRightRumble, 1.0);
+        }
+    }
+    else
+    {
+        m_intakeMotor.SetSpeed(-m_secondarystick.GetRawAxis(INTAKE_AXIS));
+    }
 }
 
 void Robot::ControlArmMotor()
@@ -90,22 +121,52 @@ void Robot::ControlArmMotor()
     else if (m_secondarystick.GetRawButton(ARM_DOWN_BUTTON)) {
         ARM_TARGET_ANGLE = 0;
     }
-    float error = m_liftEncoder.Get() / ARM_COUNTS_PER_DEGREE - ARM_TARGET_ANGLE;
-    if(error < 0)
-    {
-        m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * (std::max(abs(error / 10), 1));
-        m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * (std::max(abs(error / 10), 1));
+    else if (m_secondarystick.GetRawButton(7)) {
+        DEADZONE--;
     }
-    else if(error > 0)
+    else if (m_secondarystick.GetRawButton(8)) {
+        DEADZONE++;
+    }
+    else if (m_secondarystick.GetRawButton(3)) {
+        ARM_TARGET_ANGLE = 200;
+    }
+    else if (m_secondarystick.GetRawButton(2)) {
+        ARM_TARGET_ANGLE = 400;
+    }
+    float error = m_liftEncoder.Get() / ARM_COUNTS_PER_DEGREE - ARM_TARGET_ANGLE;
+    float currspeed;
+    if(abs(error) < ERROR_SLOWDOWN_MAX)
     {
-        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED * (std::max(abs(error / 10), 1));
-        m_armMotor2.Set(ControlMode::PercentOutput, ARM_SPEED * (std::max(abs(error / 10), 1));
+        currspeed = (abs(error) - DEADZONE) / ERROR_SLOWDOWN_MAX;
     }
     else
     {
-        m_armMotor.Set(ControlMode::PercentOutput, 0);
-        m_armMotor2.Set(ControlMode::PercentOutput, 0);
+        currspeed = 1;
     }
+    if(!manual)
+    {
+        if(error < DEADZONE)
+        {
+            m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * currspeed);
+            m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * currspeed);
+        }
+        else if(error > DEADZONE)
+        {
+            m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED * currspeed);
+            m_armMotor2.Set(ControlMode::PercentOutput, ARM_SPEED * currspeed);
+        }
+        else
+        {
+            m_armMotor.Set(ControlMode::PercentOutput, 0);
+            m_armMotor2.Set(ControlMode::PercentOutput, 0);
+        }
+    }
+    else
+    {
+        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED * m_secondarystick.GetRawAxis(MANUAL_LIFT_AXIS));
+        m_armMotor2.Set(ControlMode::PercentOutput, ARM_SPEED * m_secondarystick.GetRawAxis(MANUAL_LIFT_AXIS));
+    }
+    
     
 }
 
