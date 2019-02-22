@@ -11,6 +11,7 @@
 #include <frc/WPILib.h>
 #include <iostream>
 #include <string>
+#include "CustomPID.h"
 
 class Robot : public frc::TimedRobot {
 
@@ -41,36 +42,36 @@ private:
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
-    // buttons constants
+    // joystick constants
     const int COMPRESSOR_ON_BUTTON = 11;
     const int COMPRESSOR_OFF_BUTTON = 12;
-    const int ARM_UP_BUTTON = 4;
-    const int ARM_DOWN_BUTTON = 1;
-    const int MANUAL_OVERRIDE_BUTTON = 2;
+    // x-box controller constants
+    const int ARM_HEIGHT_1_BUTTON = 1;
+    const int ARM_HEIGHT_2_BUTTON = 2;
+    const int ARM_HEIGHT_3_BUTTON = 3;
+    const int ARM_HEIGHT_4_BUTTON = 4;
+    const int MANUAL_OVERRIDE_TRIGGER = 2;
     const int MANUAL_LIFT_AXIS = 1;
     const int INTAKE_AXIS = 5;
     // speed constants
-    const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
+    const float INTAKE_SPEED = -1.0;
     const float ARM_SPEED = 1.0;
     const float DRIVE_X_SPEED = 1.0;
-    const float DRIVE_Y_SPEED = -1.0; // y axis is inverted
-
-    //encoder angle constants
-    const int ARM_COUNTS_PER_DEGREE = 71 * 7 / 360;
-    const int ARM_MAX_ANGLE = 400;
+    const float DRIVE_Y_SPEED = -1.0;
+    // arm height constants
+    const float ARM_HEIGHT_1 = 0;
+    const float ARM_HEIGHT_2 = 100;
+    const float ARM_HEIGHT_3 = 200;
+    const float ARM_HEIGHT_4 = 400;
 
     //manual override
-    bool manual = false;
-    int ARM_TARGET_ANGLE = 0;
-    float DEADZONE = 3;
-    int ERROR_SLOWDOWN_MAX = 33;
+    bool manualOverride = false;
+
     // joystick
     frc::Joystick m_stick{ 0 };
-    frc::Joystick m_secondarystick{ 1 };
+    frc::Joystick m_xbox{ 1 };
     // camera
     cs::UsbCamera m_camera;
-
-    //frc::PIDController pid(0, 0, 0, frc::PIDSource::GetPIDSourceType(m_liftEncoder.Get()), );
 
     // drive
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
@@ -80,21 +81,28 @@ private:
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
     WPI_VictorSPX m_armMotor{ 0 };
     WPI_VictorSPX m_armMotor2{ 1 };
-    frc::Encoder m_liftEncoder{ ARM_ENCODER_A_PIN, ARM_ENCODER_B_PIN, false, frc::Encoder::EncodingType::k2X };
     frc::DigitalInput m_cargoSwitch {INTAKE_CARGO_PIN};
     // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
     frc::DoubleSolenoid m_intakeSolenoid{ INTAKE_SOLONOID_PIN_1, INTAKE_SOLONOID_PIN_2 };
     frc::DoubleSolenoid m_hatchSolenoid{ HATCH_SOLONOID_PIN_1, HATCH_SOLONOID_PIN_2 };
+    // encoder
+    CustomPID m_encoderPID;
+    frc::Encoder m_liftEncoder{ ARM_ENCODER_A_PIN, ARM_ENCODER_B_PIN, false, frc::Encoder::EncodingType::k2X };
 
     // periodic functions
-    void DriveWithJoystick();
-    void ControlIntakeMotor();
+    void ToggleManualOverride();
 
     void ControlCompressorEnabledState();
+
+    void DriveWithJoystick();
+    void ControlIntakeMotor();
+    void SetArmTargetAngle();
     void ControlIntakePiston();
     void ControlHatchPiston();
     void ControlArmMotor();
+    void AutoControlArmMotor();
+    void ManualControlArmMotor();
 
     void DisplayShuffleBoardInformation();
 };
