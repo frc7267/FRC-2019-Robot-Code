@@ -11,6 +11,7 @@
 #include <frc/WPILib.h>
 #include <iostream>
 #include <string>
+#include "CustomPID.h"
 
 class Robot : public frc::TimedRobot {
 
@@ -29,6 +30,9 @@ private:
     const int LEFT_MOTOR_PIN = 2;
     const int RIGHT_MOTOR_PIN = 1;
     const int INTAKE_MOTOR_PIN = 0;
+    const int INTAKE_CARGO_PIN = 2;
+    const int ARM_ENCODER_A_PIN = 0;
+    const int ARM_ENCODER_B_PIN = 1;
     // PCM pin constants
     const int INTAKE_SOLONOID_PIN_1 = 0;
     const int INTAKE_SOLONOID_PIN_2 = 1;
@@ -38,27 +42,37 @@ private:
     const int CAMERA_RES_W = 320;
     const int CAMERA_RES_H = 240;
     const int CAMERA_FPS = 15;
-    // buttons constants
-    const int INTAKE_SUCC_BUTTON = 7;
-    const int INTAKE_PUKE_BUTTON = 8;
+    // joystick constants
     const int COMPRESSOR_ON_BUTTON = 11;
     const int COMPRESSOR_OFF_BUTTON = 12;
-    const int INTAKE_OUT_BUTTON = 3;
-    const int INTAKE_IN_BUTTON = 4;
-    const int HATCH_IN_BUTTON = 9;
-    const int HATCH_OUT_BUTTON = 10;
-    const int ARM_UP_BUTTON = 1;
-    const int ARM_DOWN_BUTTON = 2;
+    // x-box controller constants
+    const int ARM_HEIGHT_1_BUTTON = 1;
+    const int ARM_HEIGHT_2_BUTTON = 2;
+    const int ARM_HEIGHT_3_BUTTON = 3;
+    const int ARM_HEIGHT_4_BUTTON = 4;
+    const int MANUAL_OVERRIDE_TRIGGER = 2;
+    const int MANUAL_LIFT_AXIS = 1;
+    const int INTAKE_AXIS = 5;
     // speed constants
-    const float INTAKE_SPEED = 1.0; // succ is negative, puke is positive
+    const float INTAKE_SPEED = -1.0;
     const float ARM_SPEED = 1.0;
     const float DRIVE_X_SPEED = 1.0;
-    const float DRIVE_Y_SPEED = -1.0; // y axis is inverted
+    const float DRIVE_Y_SPEED = -1.0;
+    // arm height constants
+    const float ARM_HEIGHT_1 = 0;
+    const float ARM_HEIGHT_2 = 100;
+    const float ARM_HEIGHT_3 = 200;
+    const float ARM_HEIGHT_4 = 400;
+
+    //manual override
+    bool manualOverride = false;
 
     // joystick
     frc::Joystick m_stick{ 0 };
+    frc::Joystick m_xbox{ 1 };
     // camera
     cs::UsbCamera m_camera;
+
     // drive
     frc::PWMVictorSPX m_leftMotor{ LEFT_MOTOR_PIN };
     frc::PWMVictorSPX m_rightMotor{ RIGHT_MOTOR_PIN };
@@ -66,19 +80,29 @@ private:
     // intake
     frc::Spark m_intakeMotor{ INTAKE_MOTOR_PIN };
     WPI_VictorSPX m_armMotor{ 0 };
+    WPI_VictorSPX m_armMotor2{ 1 };
+    frc::DigitalInput m_cargoSwitch {INTAKE_CARGO_PIN};
     // pneumatics
     frc::Compressor* m_compressor = new frc::Compressor(0);
     frc::DoubleSolenoid m_intakeSolenoid{ INTAKE_SOLONOID_PIN_1, INTAKE_SOLONOID_PIN_2 };
     frc::DoubleSolenoid m_hatchSolenoid{ HATCH_SOLONOID_PIN_1, HATCH_SOLONOID_PIN_2 };
+    // encoder
+    CustomPID m_encoderPID;
+    frc::Encoder m_liftEncoder{ ARM_ENCODER_A_PIN, ARM_ENCODER_B_PIN, false, frc::Encoder::EncodingType::k2X };
 
     // periodic functions
-    void DriveWithJoystick();
-    void ControlIntakeMotor();
+    void ToggleManualOverride();
 
     void ControlCompressorEnabledState();
+
+    void DriveWithJoystick();
+    void ControlIntakeMotor();
+    void SetArmTargetAngle();
     void ControlIntakePiston();
     void ControlHatchPiston();
     void ControlArmMotor();
+    void AutoControlArmMotor();
+    void ManualControlArmMotor();
 
     void DisplayShuffleBoardInformation();
 };

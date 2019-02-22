@@ -13,28 +13,41 @@ void Robot::RobotInit()
     m_camera = frc::CameraServer::GetInstance()->StartAutomaticCapture(0);
     m_camera.SetResolution(CAMERA_RES_W, CAMERA_RES_H);
     m_camera.SetFPS(CAMERA_FPS);
+
     // intake motor settings
-    m_intakeMotor.EnableDeadbandElimination(true);
+    m_intakeMotor.EnableDeadbandElimination(false);
+
     // compressor settings
     m_compressor->SetClosedLoopControl(false);
 
-    //testMotor.ConfigPeakCurrentLimit(35, 10); /* 35 A */
-    //testMotor.ConfigPeakCurrentDuration(200, 10); /* 200ms */
-    //testMotor.ConfigContinuousCurrentLimit(30, 10);   /* 30A */
-    //testMotor.EnableCurrentLimit(true);
+    //lift encoder settings
+    m_liftEncoder.Reset();
+    m_liftEncoder.SetMaxPeriod(0.1);
+    m_liftEncoder.SetMinRate(10);
+    m_liftEncoder.SetDistancePerPulse(5);
+    m_liftEncoder.SetReverseDirection(false);
+    m_liftEncoder.SetSamplesToAverage(10);
+
+    // encoder PID settings
+    m_encoderPID.SetTargetAngle(0);
+    m_encoderPID.SetTargetSpeed(ARM_SPEED);
 }
 
 void Robot::RobotPeriodic()
 {
+    ToggleManualOverride();
+
     DriveWithJoystick();
     ControlIntakeMotor();
+    SetArmTargetAngle();
+    ControlArmMotor();
 
     ControlCompressorEnabledState();
     ControlIntakePiston();
     ControlHatchPiston();
-    ControlArmMotor();
 
     DisplayShuffleBoardInformation();
+    std::cout << m_encoderPID.GetTargetAngle() << std::endl;
 }
 
 void Robot::AutonomousInit() {}
@@ -47,6 +60,11 @@ void Robot::TeleopPeriodic() {}
 
 void Robot::TestPeriodic() {}
 
+void Robot::ToggleManualOverride()
+{
+    manualOverride = m_xbox.GetRawAxis(MANUAL_OVERRIDE_TRIGGER) > 0.7;
+}
+
 void Robot::DriveWithJoystick()
 {
     // acrade drive
@@ -57,34 +75,78 @@ void Robot::DriveWithJoystick()
 
 void Robot::ControlIntakeMotor()
 {
-    // succ
-    if (m_stick.GetRawButton(INTAKE_SUCC_BUTTON)) {
-        m_intakeMotor.SetSpeed(-INTAKE_SPEED);
+    if (manualOverride) {
+        m_intakeMotor.SetSpeed(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED);
     }
-    // puke
-    else if (m_stick.GetRawButton(INTAKE_PUKE_BUTTON)) {
-        m_intakeMotor.SetSpeed(INTAKE_SPEED);
+    else if (!m_cargoSwitch.Get()) { // switch presssed
+        m_intakeMotor.SetSpeed(std::fmin(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED, 0));
     }
-    // stop
     else {
-        m_intakeMotor.SetSpeed(0.0);
+        m_intakeMotor.SetSpeed(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED);
+    }
+}
+
+void Robot::SetArmTargetAngle()
+{
+    bool height1 = m_xbox.GetRawButton(ARM_HEIGHT_1_BUTTON);
+    bool height2 = m_xbox.GetRawButton(ARM_HEIGHT_2_BUTTON);
+    bool height3 = m_xbox.GetRawButton(ARM_HEIGHT_3_BUTTON);
+    bool height4 = m_xbox.GetRawButton(ARM_HEIGHT_4_BUTTON);
+
+    if (height1) {
+        m_encoderPID.SetTargetAngle(ARM_HEIGHT_1);
+        return;
+    }
+    if (height2) {
+        m_encoderPID.SetTargetAngle(ARM_HEIGHT_2);
+        return;
+    }
+    if (height3) {
+        m_encoderPID.SetTargetAngle(ARM_HEIGHT_3);
+        return;
+    }
+    if (height4) {
+        m_encoderPID.SetTargetAngle(ARM_HEIGHT_4);
+        return;
     }
 }
 
 void Robot::ControlArmMotor()
 {
-    // up
-    if (m_stick.GetRawButton(ARM_UP_BUTTON)) {
-        m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED);
+    m_encoderPID.SetEncoderValue(m_liftEncoder.Get());
+    if (manualOverride) {
+        ManualControlArmMotor();
+    } else {
+        AutoControlArmMotor();
     }
-    // down
-    else if (m_stick.GetRawButton(ARM_DOWN_BUTTON)) {
-        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED);
-    }
-    // stop
-    else {
+}
+
+void Robot::AutoControlArmMotor()
+{
+    float speed = m_encoderPID.GetSpeed();
+
+    if (m_encoderPID.AtTargetAngle()) {
+
         m_armMotor.Set(ControlMode::PercentOutput, 0);
+        m_armMotor2.Set(ControlMode::PercentOutput, 0);
+
+    } else if (m_encoderPID.GetCurrentAngle() < m_encoderPID.GetTargetAngle()) {
+
+        m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * speed);
+        m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * speed);
+
+    } else {
+
+        m_armMotor.Set(ControlMode::PercentOutput, -ARM_SPEED * speed);
+        m_armMotor2.Set(ControlMode::PercentOutput, ARM_SPEED * speed);
     }
+}
+
+void Robot::ManualControlArmMotor()
+{
+    m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
+    m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
+    m_encoderPID.SetTargetAngle(m_encoderPID.GetCurrentAngle());
 }
 
 void Robot::ControlCompressorEnabledState()
@@ -102,11 +164,11 @@ void Robot::ControlCompressorEnabledState()
 void Robot::ControlIntakePiston()
 {
     // extend piston
-    if (m_stick.GetRawButton(INTAKE_OUT_BUTTON)) {
+    if (m_xbox.GetPOV(0) == 315 || m_xbox.GetPOV(0) == 45 || m_xbox.GetPOV(0) == 0) {
         m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
     }
     // retract piston
-    else if (m_stick.GetRawButton(INTAKE_IN_BUTTON)) {
+    else if (m_xbox.GetPOV(0) >= 135 && m_xbox.GetPOV(0) <= 225) {
         m_intakeSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
     }
     // do nothing with piston
@@ -117,12 +179,11 @@ void Robot::ControlIntakePiston()
 
 void Robot::ControlHatchPiston()
 {
-    // extend piston
-    if (m_stick.GetRawButton(HATCH_IN_BUTTON)) {
+    if (m_xbox.GetPOV(0) >= 15 && m_xbox.GetPOV(0) <= 135) {
         m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kForward);
     }
     // retract piston
-    else if (m_stick.GetRawButton(HATCH_OUT_BUTTON)) {
+    else if (m_xbox.GetPOV(0) >= 225 && m_xbox.GetPOV(0) <= 315) {
         m_hatchSolenoid.Set(frc::DoubleSolenoid::Value::kReverse);
     }
     // do nothing with piston
@@ -134,6 +195,7 @@ void Robot::ControlHatchPiston()
 void Robot::DisplayShuffleBoardInformation()
 {
     frc::SmartDashboard::PutBoolean("Compressor Enabled?", m_compressor->Enabled());
+    frc::SmartDashboard::PutNumber("Arm Angle", m_encoderPID.GetCurrentAngle());
 }
 
 #ifndef RUNNING_FRC_TESTS
