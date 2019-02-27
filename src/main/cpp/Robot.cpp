@@ -47,7 +47,6 @@ void Robot::RobotPeriodic()
     ControlHatchPiston();
 
     DisplayShuffleBoardInformation();
-    std::cout << m_encoderPID.GetTargetAngle() << std::endl;
 }
 
 void Robot::AutonomousInit() {}
@@ -70,7 +69,7 @@ void Robot::DriveWithJoystick()
     // acrade drive
     float xDrive = m_stick.GetX() * DRIVE_X_SPEED;
     float yDrive = m_stick.GetY() * DRIVE_Y_SPEED;
-    m_robotDrive.ArcadeDrive(yDrive, xDrive);
+    m_robotDrive.ArcadeDrive(xDrive, yDrive); // hardware flipped; should be (yDrive, xDrive)
 }
 
 void Robot::ControlIntakeMotor()
@@ -79,7 +78,7 @@ void Robot::ControlIntakeMotor()
         m_intakeMotor.SetSpeed(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED);
     }
     else if (!m_cargoSwitch.Get()) { // switch presssed
-        m_intakeMotor.SetSpeed(std::fmin(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED, 0));
+        m_intakeMotor.SetSpeed(std::fmax(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED, 0));
     }
     else {
         m_intakeMotor.SetSpeed(m_xbox.GetRawAxis(INTAKE_AXIS) * INTAKE_SPEED);
@@ -146,7 +145,8 @@ void Robot::ManualControlArmMotor()
 {
     m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
     m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
-    m_encoderPID.SetTargetAngle(m_encoderPID.GetCurrentAngle());
+    m_liftEncoder.Reset();
+    m_encoderPID.SetTargetAngle(0);
 }
 
 void Robot::ControlCompressorEnabledState()

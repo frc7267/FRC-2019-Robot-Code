@@ -40,7 +40,7 @@ float CustomPID::GetSpeed()
 {
     if (abs(AngleOffset()) < ERROR_SLOWDOWN_MAX_ANGLE) {
 
-        return (abs(AngleOffset()) - BUFFER_ANGLE) / ERROR_SLOWDOWN_MAX_ANGLE;
+        return targetSpeed * (abs(AngleOffset()) - BUFFER_ANGLE) / ERROR_SLOWDOWN_MAX_ANGLE;
     }
 
     return targetSpeed;

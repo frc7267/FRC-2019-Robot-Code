@@ -60,9 +60,9 @@ private:
     const float DRIVE_Y_SPEED = -1.0;
     // arm height constants
     const float ARM_HEIGHT_1 = 0;
-    const float ARM_HEIGHT_2 = 100;
-    const float ARM_HEIGHT_3 = 200;
-    const float ARM_HEIGHT_4 = 400;
+    const float ARM_HEIGHT_2 = -100;
+    const float ARM_HEIGHT_3 = -200;
+    const float ARM_HEIGHT_4 = -400;
 
     //manual override
     bool manualOverride = false;
