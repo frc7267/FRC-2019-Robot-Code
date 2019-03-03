@@ -18,7 +18,7 @@ void Robot::RobotInit()
     m_intakeMotor.EnableDeadbandElimination(false);
 
     // compressor settings
-    m_compressor->SetClosedLoopControl(false);
+    m_compressor->SetClosedLoopControl(true);
 
     //lift encoder settings
     m_liftEncoder.Reset();
@@ -42,11 +42,13 @@ void Robot::RobotPeriodic()
     SetArmTargetAngle();
     ControlArmMotor();
 
-    ControlCompressorEnabledState();
+    //ControlCompressorEnabledState();
     ControlIntakePiston();
     ControlHatchPiston();
 
     DisplayShuffleBoardInformation();
+
+    m_compressor->SetClosedLoopControl(true);
 }
 
 void Robot::AutonomousInit() {}
@@ -67,8 +69,8 @@ void Robot::ToggleManualOverride()
 void Robot::DriveWithJoystick()
 {
     // acrade drive
-    float xDrive = m_stick.GetX() * DRIVE_X_SPEED;
-    float yDrive = m_stick.GetY() * DRIVE_Y_SPEED;
+    float xDrive = m_stick.GetX() * DRIVE_X_SPEED * 0.7;
+    float yDrive = m_stick.GetY() * DRIVE_Y_SPEED * 0.9;
     m_robotDrive.ArcadeDrive(xDrive, yDrive); // hardware flipped; should be (yDrive, xDrive)
 }
 
@@ -143,8 +145,8 @@ void Robot::AutoControlArmMotor()
 
 void Robot::ManualControlArmMotor()
 {
-    m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
-    m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS));
+    m_armMotor.Set(ControlMode::PercentOutput, ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS) + 0.2);
+    m_armMotor2.Set(ControlMode::PercentOutput, -ARM_SPEED * m_xbox.GetRawAxis(MANUAL_LIFT_AXIS) - 0.2);
     m_liftEncoder.Reset();
     m_encoderPID.SetTargetAngle(0);
 }
